@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -41,6 +45,39 @@ class EventController extends Controller
     public function store(Request $request)
     {
         //
+        $validator = Validator::make($request->all(), [
+            'eventName' => 'required|string',
+            'slug' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+
+            return response()->json(array('success' => false, 'errors' => $validator->errors()->all()), $status = 422);
+        } else {
+
+            $startAt = null;
+            $endAt = null;
+
+            if ($request->start_at) {
+                $dateStart = Carbon::createFromFormat('d/m/Y h:i A', $request->startAt);
+                $startAt = $dateStart->format('Y-m-d H:i:s');
+            }
+
+            if ($request->end_at) {
+                $dateEnd = Carbon::createFromFormat('d/m/Y h:i A', $request->endAt);
+                $endAt = $dateEnd->format('Y-m-d H:i:s');
+            }
+
+            $event = new Event();
+            $event->id = Str::uuid()->toString();
+            $event->name = $request->eventName;
+            $event->slug = $request->slug;
+            $event->start_at = $startAt;
+            $event->end_at = $endAt;
+            $event->save();
+
+            return redirect('/events');
+        }
     }
 
     /**
@@ -67,6 +104,14 @@ class EventController extends Controller
     public function edit($id)
     {
         //
+        $event = Event::find($id);
+        $startAt = date_create($event->start_at);
+        $endAt = date_create($event->end_at);
+
+        return view('events.edit')
+            ->with('event', $event)
+            ->with('startAt', date_format($startAt, 'd/m/Y H:i A'))
+            ->with('endAt', date_format($endAt, 'd/m/Y H:i A'));
     }
 
     /**
@@ -79,6 +124,39 @@ class EventController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $validator = Validator::make($request->all(), [
+            'eventName' => 'required|string',
+            'slug' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+
+            return response()->json(array('success' => false, 'errors' => $validator->errors()->all()), $status = 422);
+        } else {
+            dd($request->all());
+
+            $startAt = null;
+            $endAt = null;
+
+            if ($request->start_at) {
+                $dateStart = Carbon::createFromFormat('d/m/Y h:i A', $request->startAt);
+                $startAt = $dateStart->format('Y-m-d H:i:s');
+            }
+
+            if ($request->end_at) {
+                $dateEnd = Carbon::createFromFormat('d/m/Y h:i A', $request->endAt);
+                $endAt = $dateEnd->format('Y-m-d H:i:s');
+            }
+
+            $event = Event::find($id);
+            $event->name = $request->eventName;
+            $event->slug = $request->slug;
+            $event->start_at = $startAt;
+            $event->end_at = $endAt;
+            $event->update();
+
+            return redirect('/events');
+        }
     }
 
     /**
@@ -90,5 +168,13 @@ class EventController extends Controller
     public function destroy($id)
     {
         //
+        $event = Event::find($id);
+
+        if ($event) {
+            $event->deleted_at = Carbon::now();
+            $event->save();
+
+            return redirect('/events');
+        }
     }
 }

@@ -32,14 +32,14 @@
                             @foreach($events as $index => $event)
                             <tr>
                                 <td>{{ $events->firstItem() + $index }}</td>
-                                <td><a href="{{ route('events.show', $event->id) }}">{{ $event->name }}</a></td>
+                                <td><a href="/events/{{ $event->id }}">{{ $event->name }}</a></td>
                                 <td>{{ $event->slug }}</td>
                                 <td>{{ $event->start_at }}</td>
                                 <td>{{ $event->end_at }}</td>
                                 <td>-</td>
                                 <td>
-                                    <button type="button" class="btn btn-info">Update</button>
-                                    <button type="button" class="btn btn-danger">Delete</button>
+                                    <a href="{{ route('events.edit', $event->id) }}" class="btn btn-info">Update</a>
+                                    <a href="{{ route('events.destroy', $event->id) }}" class="btn btn-danger">Delete</a>
                                 </td>
                                 </td>
                             </tr>
