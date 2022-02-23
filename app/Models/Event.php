@@ -9,4 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Event extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected $increments = false;
+    protected $casts = [
+        'id' => 'string',
+    ];
 }
